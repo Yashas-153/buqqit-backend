@@ -1,0 +1,167 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              Int   @id @unique @default(autoincrement())
+  name            String
+  email           String   @unique
+  password        String
+  phone_number    String
+  profile_picture String?
+  bio              String?
+  verified        Boolean?
+  verification_token String? @default(uuid())
+  password_reset_token String?
+  password_reset_expires DateTime?
+  user_type       UserType
+  Studios         Studio[]  @relation("StudioOwner")
+  Bookings        Booking[] @relation("UserBookings")
+  Reviews         Review[]
+}
+
+model Address{
+  id           Int @id @default(autoincrement())
+  studio_id    Int  @unique
+  studio       Studio @relation(fields: [studio_id],references: [id])
+  address      String
+  city         String
+  state        String
+  country      String
+  pincode      String
+  latitude     Decimal   @default(0.0000000)  // Decimal field for latitude
+  longitude    Decimal   @default(0.0000000)  
+  
+}
+
+model Studio {
+  id            Int        @id @default(autoincrement())
+  host_id       Int
+  name          String
+  description   String?
+  studio_type   String
+  hourly_rate   Float
+  max_people    Int
+  min_duration  Int
+  size          Float
+  created_at    DateTime   @default(now())
+  updated_at    DateTime   @updatedAt
+  deleted_at    DateTime?
+  host          User       @relation("StudioOwner", fields: [host_id], references: [id])
+  address       Address?
+  availability  Availability[]
+  bookings      Booking[]
+  reviews       Review[]  
+  amenities     StudioAmenity[]
+  photos        Photo[]
+  props         Prop[]
+}
+
+model Availability {
+  id           Int      @id @default(autoincrement())
+  studio_id    Int
+  day_of_week  Int       // 0 (Sunday) to 6 (Saturday)
+  start_time   DateTime  @db.Time 
+  end_time     DateTime  @db.Time
+  is_recurring Boolean   @default(false) // Indicates if the availability is recurring weekly
+  studio       Studio    @relation(fields: [studio_id], references: [id])
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+} 
+
+
+model Booking {
+  id   Int       @id @default(autoincrement())
+  user_id      Int
+  studio_id    Int
+  start_time   DateTime
+  end_time     DateTime
+  total_cost   Float
+  status       BookingStatus
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  user         User      @relation("UserBookings", fields: [user_id], references: [id])
+  studio       Studio    @relation(fields: [studio_id], references: [id])
+  payment      Payment[]
+}
+
+model Prop{
+  id          Int   @id @default(autoincrement())
+  name        String
+  description String?
+  price       Int
+  studio_id   Int
+  studio      Studio  @relation(fields: [studio_id], references: [id])
+  available   Boolean @default(true)
+}
+
+model Review {
+  id    Int       @id @default(autoincrement())
+  user_id      Int
+  studio_id    Int
+  rating       Int
+  comment      String?
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  user         User      @relation(fields: [user_id], references: [id])
+  studio       Studio    @relation(fields: [studio_id], references: [id])
+  @@unique([user_id, studio_id])
+}
+
+
+model Payment {
+  id   Int       @id @default(autoincrement())
+  booking_id   Int
+  booking     Booking  @relation(fields: [booking_id], references: [id])
+  amount       Float
+  payment_method String
+  payment_status PaymentStatus
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+}
+
+model Amenity {
+  id        Int           @id @default(autoincrement())
+  name      String
+  icon_url  String
+  Studios   StudioAmenity[]
+}
+model Photo{
+  id                Int @id @default(autoincrement())
+  studio            Studio @relation(fields: [studio_id], references: [id])
+  studio_id         Int
+  url               String
+  upload_date       DateTime
+}
+
+
+model StudioAmenity {
+  studio_id  Int
+  amenity_id Int
+  studio     Studio @relation(fields: [studio_id], references: [id])
+  amenity    Amenity @relation(fields: [amenity_id], references: [id])
+  @@id([studio_id, amenity_id])
+}
+
+enum UserType {
+  USER
+  HOST
+}
+
+enum BookingStatus {
+  Pending
+  Confirmed
+  Canceled
+}
+
+enum PaymentStatus {
+  Pending
+  Completed
+  Failed
+  Refunded
+}
