@@ -5,21 +5,18 @@ const {signUpSchema} = require("../utils/emailVerification")
 const {transporter} = require("../utils/emailVerification")
 const { v4: uuidv4 } = require('uuid'); 
 const prisma = require('../database/prismaPostgress')
-const cookieToken = require('../utils/cookieToken');
+const sendCookieToken = require('../utils/cookieToken');
 
 
 module.exports.signUp = async (req, res, next) => {
     console.log("Reached signup Controller");
     const {name, email, password, phoneNumber,userType} = req.body;
     console.log(req.body);
-
     const { error } = signUpSchema.validate(req.body);
     if (error) {    
         return res.status(400).json({ error: error.details[0].message });
     }
     console.log(email, "format is validated");
-
-    
     try {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
@@ -50,7 +47,7 @@ module.exports.signUp = async (req, res, next) => {
         //     }
         //     console.log('Verification email sent: ' + info.response);
         // });
-        cookieToken(user,res)
+        sendCookieToken(user,res)
         // res.status(200).json({ msg: 'Account Created Successfully. Please verify your email.',user });
     } catch (err) {
         console.log(err);

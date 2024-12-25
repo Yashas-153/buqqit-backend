@@ -1,6 +1,6 @@
 const createJWTToken = require('./jwtToken')
 
-const cookieToken = (user,res)=>{
+const sendCookieToken = (user,res)=>{
     const token = createJWTToken(user.id)
     const options = {
         expires: new Date(
@@ -15,4 +15,4 @@ const cookieToken = (user,res)=>{
     });
 }
 
-module.exports = cookieToken
+module.exports = sendCookieToken

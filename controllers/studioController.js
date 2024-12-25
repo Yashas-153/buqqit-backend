@@ -8,6 +8,7 @@ const getStudios = async (req, res) => {
     const studio = await prisma.studio.findMany({
       include: {
         // Amenities: true,
+        address:true,
         photos: true, // Include photos related to each studio
       }
     });
@@ -19,12 +20,14 @@ const getStudios = async (req, res) => {
 };
 
 const getStudioById = async (req, res) => {
+  console.log("get studio by ID")
   const {studio_id} = req.params;
   try {
     const studio = await prisma.studio.findUnique({
       where: { id: parseInt(studio_id) },
       include: {
-        photos:true
+        photos:true,
+        address:true,
       }
     });
     if (!studio) {

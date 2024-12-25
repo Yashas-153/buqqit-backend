@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  id              Int   @id @unique @default(autoincrement())
+  id              Int   @unique //@default(autoincrement())
   name            String
   email           String   @unique
   password        String
@@ -26,7 +26,7 @@ model User {
 }
 
 model Address{
-  id           Int @id @default(autoincrement())
+  id           Int  //@id @default(autoincrement())
   studio_id    Int  @unique
   studio       Studio @relation(fields: [studio_id],references: [id])
   address      String
@@ -36,11 +36,10 @@ model Address{
   pincode      String
   latitude     Decimal   @default(0.0000000)  // Decimal field for latitude
   longitude    Decimal   @default(0.0000000)  
-  
 }
 
 model Studio {
-  id            Int        @id @default(autoincrement())
+  id            Int       @id @default(autoincrement())
   host_id       Int
   name          String
   description   String?
@@ -131,6 +130,7 @@ model Amenity {
   icon_url  String
   Studios   StudioAmenity[]
 }
+
 model Photo{
   id                Int @id @default(autoincrement())
   studio            Studio @relation(fields: [studio_id], references: [id])
