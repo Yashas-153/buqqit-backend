@@ -72,7 +72,7 @@ module.exports.signIn = async (req, res) => {
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if (isPasswordValid) {
-            cookieToken(user,res)
+            sendCookieToken(user,res)
             // res.status(200).json({ token: token });
         } else {
             return res.status(401).json({ message: 'Invalid credentials' });

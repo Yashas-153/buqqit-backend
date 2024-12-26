@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  id              Int   @unique //@default(autoincrement())
+  id              Int   @unique @default(autoincrement())
   name            String
   email           String   @unique
   password        String
@@ -26,7 +26,7 @@ model User {
 }
 
 model Address{
-  id           Int  //@id @default(autoincrement())
+  id           Int  @id @default(autoincrement())
   studio_id    Int  @unique
   studio       Studio @relation(fields: [studio_id],references: [id])
   address      String
@@ -34,7 +34,7 @@ model Address{
   state        String
   country      String
   pincode      String
-  latitude     Decimal   @default(0.0000000)  // Decimal field for latitude
+  latitude     Decimal   @default(0.0000000) 
   longitude    Decimal   @default(0.0000000)  
 }
 
@@ -55,8 +55,8 @@ model Studio {
   address       Address?
   availability  Availability[]
   bookings      Booking[]
-  reviews       Review[]  
-  amenities     StudioAmenity[]
+  reviews       Review[]
+  amenities     Amenity[]
   photos        Photo[]
   props         Prop[]
 }
@@ -64,15 +64,14 @@ model Studio {
 model Availability {
   id           Int      @id @default(autoincrement())
   studio_id    Int
-  day_of_week  Int       // 0 (Sunday) to 6 (Saturday)
+  day_of_week  Int       
   start_time   DateTime  @db.Time 
   end_time     DateTime  @db.Time
-  is_recurring Boolean   @default(false) // Indicates if the availability is recurring weekly
+  is_recurring Boolean   @default(false) 
   studio       Studio    @relation(fields: [studio_id], references: [id])
   created_at   DateTime  @default(now())
   updated_at   DateTime  @updatedAt
 } 
-
 
 model Booking {
   id   Int       @id @default(autoincrement())
@@ -128,7 +127,7 @@ model Amenity {
   id        Int           @id @default(autoincrement())
   name      String
   icon_url  String
-  Studios   StudioAmenity[]
+  Studio Studio[]
 }
 
 model Photo{
@@ -139,14 +138,6 @@ model Photo{
   upload_date       DateTime
 }
 
-
-model StudioAmenity {
-  studio_id  Int
-  amenity_id Int
-  studio     Studio @relation(fields: [studio_id], references: [id])
-  amenity    Amenity @relation(fields: [amenity_id], references: [id])
-  @@id([studio_id, amenity_id])
-}
 
 enum UserType {
   USER

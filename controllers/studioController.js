@@ -2,17 +2,57 @@ const prisma= require('../database/prismaPostgress');
 const multer = require("multer");
 
 const getStudios = async (req, res) => {
-  console.log("Reached get studios controller");
+  const { host_id, user_id } = req.query;
   
   try {
-    const studio = await prisma.studio.findMany({
-      include: {
-        // Amenities: true,
-        address:true,
-        photos: true, // Include photos related to each studio
+    let studios;
+    const includeOptions = {
+      address: true,
+      photos: true,
+      amenities: true,
+      availability: true,
+      host: {
+        select: {
+          name: true,
+          email: true,
+          phone_number: true
+        }
       }
-    });
-    res.json(studio);
+    };
+
+    if (host_id) {
+      studios = await prisma.studio.findMany({
+        where: { host_id: parseInt(host_id) },
+        include: includeOptions
+      });
+    } 
+    else if (user_id) {
+      // Get studios from user's bookings
+      const userBookings = await prisma.booking.findMany({
+        where: { user_id: parseInt(user_id) },
+        select: {
+          studio: {
+            include: includeOptions
+          }
+        }
+      });
+      studios = userBookings.map(booking => booking.studio);
+      // Remove duplicates
+      studios = Array.from(new Set(studios.map(s => s.id))).map(id => 
+        studios.find(s => s.id === id)
+      );
+    }
+    else {
+      studios = await prisma.studio.findMany({
+        include: includeOptions
+      });
+    }
+
+    if (!studios || studios.length === 0) {
+      return res.status(404).json({ message: 'No studios found' });
+    }
+
+    res.json(studios);
   } catch (error) {
     console.error("Error fetching studios:", error);
     res.status(500).json({ error: 'Failed to fetch studios' });
@@ -42,9 +82,37 @@ const getStudioById = async (req, res) => {
 
 const createStudio = async (req, res) => {
   try {
-    const { userId, name, description, hourly_rate, maxPeople, minDuration, studioType, size, address } = req.body;
+    const { 
+      userId, 
+      name, 
+      description, 
+      hourly_rate, 
+      maxPeople, 
+      minDuration, 
+      studioType, 
+      size, 
+      address,
+      availability,
+      amenities 
+    } = req.body;
 
-    // Step 1: Create the Studio
+    // Validate availability data
+    if (!availability || !availability.days || !availability.startTime || !availability.endTime) {
+      return res.status(400).json({ message: 'Availability information is required' });
+    }
+
+    // Validate time slots are exactly 1 hour
+    const startHour = getTimeNumber(availability.startTime);
+    const endHour = getTimeNumber(availability.endTime);
+    
+    if (startHour < 0 || startHour > 23 || endHour < 0 || endHour > 23) {
+      return res.status(400).json({ message: 'Time must be between 0 and 23 hours' });
+    }
+    if (endHour - startHour !== 1) {
+      return res.status(400).json({ message: 'Time slots must be exactly 1 hour' });
+    }
+
+    // Create the Studio
     const newStudio = await prisma.studio.create({
       data: {
         host_id: userId,
@@ -54,11 +122,11 @@ const createStudio = async (req, res) => {
         max_people: maxPeople,
         min_duration: minDuration,
         studio_type: studioType,
-        size, 
+        size,
       },
     });
 
-    // Step 2: Create the Address associated with the Studio
+    // Create the Address
     const newAddress = await prisma.address.create({
       data: {
         studio_id: newStudio.id,
@@ -72,16 +140,71 @@ const createStudio = async (req, res) => {
       },
     });
 
+    // Connect amenities to studio
+    if (amenities && amenities.length > 0) {
+      await prisma.studio.update({
+        where: { id: newStudio.id },
+        data: {
+          amenities: {
+            connect: amenities.map(amenityId => ({ id: parseInt(amenityId) }))
+          }
+        }
+      });
+    }
+
+    // Create availability slots for each selected day
+    const availabilitySlots = await Promise.all(
+      availability.days.map(async (day) => {
+        return await prisma.availability.create({
+          data: {
+            studio_id: newStudio.id,
+            day_of_week: getDayNumber(day),
+            start_time: new Date(`2024-01-01T${availability.startTime}`),
+            end_time: new Date(`2024-01-01T${availability.endTime}`),
+            is_recurring: true,
+          },
+        });
+      })
+    );
+
+    // Fetch the created studio with all relations
+    const createdStudio = await prisma.studio.findUnique({
+      where: { id: newStudio.id },
+      include: {
+        address: true,
+        amenities: true,
+        availability: true
+      }
+    });
+
     return res.status(201).json({
-      message: 'Studio and address created successfully',
-      studio: newStudio,
-      address: newAddress,
+      message: 'Studio created successfully',
+      studio: createdStudio
     });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Error creating studio', error: error.message });
   }
 };
+
+// Helper function to convert time string to hour number
+function getTimeNumber(timeStr) {
+  return parseInt(timeStr.split(':')[0]);
+}
+
+// Helper function to convert day names to numbers
+function getDayNumber(day) {
+  const days = {
+    'sunday': 0,
+    'monday': 1,
+    'tuesday': 2,
+    'wednesday': 3,
+    'thursday': 4,
+    'friday': 5,
+    'saturday': 6
+  };
+  return days[day.toLowerCase()];
+}
 
 const updateStudio = async (req, res) => {
   const { studio_id } = req.params;

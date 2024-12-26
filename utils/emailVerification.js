@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const dotenv = require('dotenv');
 const Joi = require('joi'); //Joi is used for string validation (for now)
 
 const signUpSchema = Joi.object({
@@ -9,15 +10,15 @@ const signUpSchema = Joi.object({
     userType: Joi.string().required()
 });
 
-// const transporter = nodemailer.createTransport({
-//     service: 'Gmail',
-//     auth: {
-//         user: process.env.EMAIL,
-//         pass: process.env.EMAIL_PASSWORD
-//     }
-// });
+const transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+        user: process.env.EMAIL,
+        pass: process.env.EMAIL_PASSWORD
+    }
+});
 
-module.exports = {signUpSchema}
+module.exports = {signUpSchema, transporter}
 
 
 
