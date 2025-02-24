@@ -59,14 +59,26 @@ model Studio {
   amenities     Amenity[]
   photos        Photo[]
   props         Prop[]
+  addons        Addon[]
+  equipments    Equipment[]
 }
+
+// model BookedSlots {
+//   id            Int      @id @default(autoincrement())
+//   studio_id     Int
+//   date          DateTime
+//   start_time    DateTime
+//   end_time      DateTime
+
+// }
+
 
 model Availability {
   id           Int      @id @default(autoincrement())
   studio_id    Int
-  day_of_week  Int       
-  start_time   DateTime  @db.Time 
-  end_time     DateTime  @db.Time
+  date         DateTime     
+  start_time   Int 
+  end_time     Int
   is_recurring Boolean   @default(false) 
   studio       Studio    @relation(fields: [studio_id], references: [id])
   created_at   DateTime  @default(now())
@@ -74,28 +86,73 @@ model Availability {
 } 
 
 model Booking {
-  id   Int       @id @default(autoincrement())
-  user_id      Int
-  studio_id    Int
-  start_time   DateTime
-  end_time     DateTime
-  total_cost   Float
-  status       BookingStatus
-  created_at   DateTime  @default(now())
-  updated_at   DateTime  @updatedAt
-  user         User      @relation("UserBookings", fields: [user_id], references: [id])
-  studio       Studio    @relation(fields: [studio_id], references: [id])
-  payment      Payment[]
+  id          Int       @id @default(autoincrement())
+  user_id     Int
+  studio_id   Int
+  start_time  DateTime
+  end_time    DateTime
+  total_cost  Float
+  status      BookingStatus
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  user        User      @relation("UserBookings", fields: [user_id], references: [id])
+  studio      Studio    @relation(fields: [studio_id], references: [id])
+  payment     Payment[]
+  addons      BookingAddon[]
+}
+
+model Amenity {
+  id        Int           @id @default(autoincrement())
+  name      String
+  icon_url  String
+  Studio    Studio[]
+}
+
+model Equipment{
+  id            Int           @id @default(autoincrement())
+  name          String
+  description   String?
+  icon_url      String
+  studio        Studio  @relation(fields: [studio_id], references: [id])
+  studio_id     Int
+  
 }
 
 model Prop{
   id          Int   @id @default(autoincrement())
   name        String
   description String?
-  price       Int
-  studio_id   Int
+  icon_url    String
   studio      Studio  @relation(fields: [studio_id], references: [id])
-  available   Boolean @default(true)
+  studio_id   Int
+}
+
+model Addon {
+  id           Int            @id @default(autoincrement())
+  studio       Studio         @relation(fields: [studioId], references: [id])
+  studioId     Int
+  name         String
+  description  String?
+  price        Decimal        @db.Decimal(10, 2)
+  category     String
+  imageUrl     String?
+  availability String?
+  isActive     Boolean        @default(true)
+  bookings     BookingAddon[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  @@index([studioId])
+  @@index([category])
+}
+
+model BookingAddon {
+  id          Int      @id @default(autoincrement())
+  booking     Booking  @relation(fields: [booking_id], references: [id])
+  booking_id  Int
+  addon       Addon    @relation(fields: [addon_id], references: [id])
+  addon_id    Int
+  quantity    Int      @default(1)
+  created_at  DateTime @default(now())
 }
 
 model Review {
@@ -121,13 +178,6 @@ model Payment {
   payment_status PaymentStatus
   created_at   DateTime  @default(now())
   updated_at   DateTime  @updatedAt
-}
-
-model Amenity {
-  id        Int           @id @default(autoincrement())
-  name      String
-  icon_url  String
-  Studio Studio[]
 }
 
 model Photo{

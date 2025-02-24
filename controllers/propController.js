@@ -4,13 +4,14 @@ const prisma = require('../database/prismaPostgress');
 const addProp = async (req, res) => {
     const studioId = parseInt(req.params.studio_id);
     console.log("studio Id is ", studioId);
-    const { name, price } = req.body;
+    const { name, description,icon_url } = req.body;
 
     try {
-        const response = await prisma.props.create({
+        const response = await prisma.prop.create({
             data: {
                 name,
-                price,
+                description,
+                icon_url,
                 studio_id: studioId,
             },
         });

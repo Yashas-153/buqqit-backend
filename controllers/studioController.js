@@ -1,8 +1,30 @@
 const prisma= require('../database/prismaPostgress');
 const multer = require("multer");
 
+
+// Helper function to convert time string to hour number
+function getTimeNumber(timeStr) {
+  return parseInt(timeStr.split(':')[0]);
+}
+
+// Helper function to convert day names to numbers
+function getDayNumber(day) {
+  const days = {
+    'sunday': 0,
+    'monday': 1,
+    'tuesday': 2,
+    'wednesday': 3,
+    'thursday': 4,
+    'friday': 5,
+    'saturday': 6
+  };
+  return days[day.toLowerCase()];
+}
+
+
 const getStudios = async (req, res) => {
-  const { host_id, user_id } = req.query;
+  console.log("get studios")
+  const { host_id, user_id, studio_id } = req.query;
   
   try {
     let studios;
@@ -11,6 +33,10 @@ const getStudios = async (req, res) => {
       photos: true,
       amenities: true,
       availability: true,
+      props:true,
+      equipments:true,
+      addons:true,
+      reviews:true,
       host: {
         select: {
           name: true,
@@ -23,6 +49,12 @@ const getStudios = async (req, res) => {
     if (host_id) {
       studios = await prisma.studio.findMany({
         where: { host_id: parseInt(host_id) },
+        include: includeOptions
+      });
+    } 
+    else if (studio_id) {
+      studios = await prisma.studio.findMany({
+        where: { id: parseInt(studio_id) },
         include: includeOptions
       });
     } 
@@ -62,12 +94,14 @@ const getStudios = async (req, res) => {
 const getStudioById = async (req, res) => {
   console.log("get studio by ID")
   const {studio_id} = req.params;
+  console.log("studio Id is",studio_id)
   try {
     const studio = await prisma.studio.findUnique({
       where: { id: parseInt(studio_id) },
       include: {
         photos:true,
         address:true,
+        addons:true
       }
     });
     if (!studio) {
@@ -108,9 +142,9 @@ const createStudio = async (req, res) => {
     if (startHour < 0 || startHour > 23 || endHour < 0 || endHour > 23) {
       return res.status(400).json({ message: 'Time must be between 0 and 23 hours' });
     }
-    if (endHour - startHour !== 1) {
-      return res.status(400).json({ message: 'Time slots must be exactly 1 hour' });
-    }
+    // if (endHour - startHour !== 1) {
+    //   return res.status(400).json({ message: 'Time slots must be exactly 1 hour' });
+    // }
 
     // Create the Studio
     const newStudio = await prisma.studio.create({
@@ -159,8 +193,8 @@ const createStudio = async (req, res) => {
           data: {
             studio_id: newStudio.id,
             day_of_week: getDayNumber(day),
-            start_time: new Date(`2024-01-01T${availability.startTime}`),
-            end_time: new Date(`2024-01-01T${availability.endTime}`),
+            start_time: startHour,// why cant we store the startHour and endHour d
+            end_time: endHour,
             is_recurring: true,
           },
         });
@@ -187,27 +221,9 @@ const createStudio = async (req, res) => {
   }
 };
 
-// Helper function to convert time string to hour number
-function getTimeNumber(timeStr) {
-  return parseInt(timeStr.split(':')[0]);
-}
-
-// Helper function to convert day names to numbers
-function getDayNumber(day) {
-  const days = {
-    'sunday': 0,
-    'monday': 1,
-    'tuesday': 2,
-    'wednesday': 3,
-    'thursday': 4,
-    'friday': 5,
-    'saturday': 6
-  };
-  return days[day.toLowerCase()];
-}
 
 const updateStudio = async (req, res) => {
-  const { studio_id } = req.params;
+  const { studio_id } = req.query;
   console.log("studio_id is ", studio_id);
   const { userId, name, description, minDuration, maxPeople, hourly_rate,  } = req.body;
   try {
@@ -260,7 +276,6 @@ const deleteStudio = async (req, res) => {
 };
 
 const searchStudios = async (req,res)=>{
-
   console.log(req.body)
   console.log("reached studio search function")
   const {studioType, city, date, startTime, endTime} = req.body.searchData;

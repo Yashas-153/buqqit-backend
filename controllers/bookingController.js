@@ -2,7 +2,10 @@ const prisma = require('../database/prismaPostgress');
 const { transporter } = require('../utils/emailVerification')
 
 const createBooking = async (req, res) => {
+
+    // have to handle a situation where there is failure in the creating entries in one table 
   const { userId, studioId, startTime, endTime, totalCost } = req.body;
+  console.log("creating new booking")
   const bookingDate = new Date(startTime);
   const dayOfWeek = bookingDate.getDay();
   const timeStart = new Date(startTime).toTimeString().slice(0,8);

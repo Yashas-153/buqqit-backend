@@ -62,4 +62,25 @@ const uploadPhotos = async (req, res) => {
   }
 };
 
-module.exports = { upload, uploadPhotos };
+const addImageURLs = async (req,res)=>{
+  const {studio_id,links} = req.body
+  console.log
+  try{
+    const response = await Promise.all(
+    links.map(async (link)=>{
+      await prisma.photo.create({
+        data:{
+          studio_id,
+          url:link,
+          upload_date:new Date()
+        }
+      })
+  }))
+    return res.status(200).json({message:"successfully uploaded Image URLs",response})
+  }catch(err){
+    console.log(err)
+    res.status(400).json({message:"Error in adding Image URLs",error:err.message})
+  }
+}
+
+module.exports = { upload, uploadPhotos, addImageURLs};

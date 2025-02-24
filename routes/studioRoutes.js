@@ -8,18 +8,18 @@ const {
   searchStudios,
   getStudios,
 } = require('../controllers/studioController');
-const {isHost, isUser} = require('../middleware/authMiddleware');
-const { upload, uploadPhotos } = require('../controllers/photoUploadController');
+const {isHost, isUser, isAuthenticated} = require('../middleware/authMiddleware');
+const { upload, uploadPhotos, addImageURLs} = require('../controllers/photoUploadController');
 const router = express.Router();
-router.get('/',getStudios); // Accessible by all users
-router.get('/:studio_id', getStudioById); // Accessible by all users
-router.post('/', isHost,createStudio); // Accessible by hosts only
-router.put('/:studio_id', isHost,updateStudio); // Accessible by hosts only
-router.delete('/:studio_id', isHost,deleteStudio); // Accessible by hosts only
+router.get('/:studio_id', getStudioById); 
+router.get('/',getStudios);
+router.post('/', isAuthenticated, isHost,createStudio);
+router.put('/:studio_id', isAuthenticated, isHost, updateStudio); 
+router.delete('/:studio_id', isHost,deleteStudio); 
 router.post('/search',searchStudios)
 router.post('/upload-photos/:studio_id', upload.array('photos', 5), isHost,uploadPhotos); // Limit to 5 photos
 router.post("/availability/:studio_id",isHost,setAvailability)
-
+router.post("/add-studio-urls",addImageURLs)
 
 module.exports = router;
   
