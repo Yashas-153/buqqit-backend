@@ -10,7 +10,7 @@ const {isHost} = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-router.post('/', createAmenity); 
+router.post('/',createAmenity); 
 router.get('/', getAmenities);  
 router.put('/:amenityId', updateAmenity); 
 router.post("/add-multiple",createAmenities)

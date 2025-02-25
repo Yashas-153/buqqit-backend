@@ -1,12 +1,10 @@
 require("dotenv").config;
-// const user = require('../models/user-sql')
 const bcrypt = require("bcrypt")
 const {signUpSchema} = require("../utils/emailVerification")
 const {transporter} = require("../utils/emailVerification")
 const { v4: uuidv4 } = require('uuid'); 
 const prisma = require('../database/prismaPostgress')
 const sendCookieToken = require('../utils/cookieToken');
-
 
 module.exports.signUp = async (req, res, next) => {
     console.log("Reached signup Controller");

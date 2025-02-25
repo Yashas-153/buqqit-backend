@@ -126,25 +126,8 @@ const createStudio = async (req, res) => {
       studioType, 
       size, 
       address,
-      availability,
       amenities 
     } = req.body;
-
-    // Validate availability data
-    if (!availability || !availability.days || !availability.startTime || !availability.endTime) {
-      return res.status(400).json({ message: 'Availability information is required' });
-    }
-
-    // Validate time slots are exactly 1 hour
-    const startHour = getTimeNumber(availability.startTime);
-    const endHour = getTimeNumber(availability.endTime);
-    
-    if (startHour < 0 || startHour > 23 || endHour < 0 || endHour > 23) {
-      return res.status(400).json({ message: 'Time must be between 0 and 23 hours' });
-    }
-    // if (endHour - startHour !== 1) {
-    //   return res.status(400).json({ message: 'Time slots must be exactly 1 hour' });
-    // }
 
     // Create the Studio
     const newStudio = await prisma.studio.create({
@@ -186,34 +169,19 @@ const createStudio = async (req, res) => {
       });
     }
 
-    // Create availability slots for each selected day
-    const availabilitySlots = await Promise.all(
-      availability.days.map(async (day) => {
-        return await prisma.availability.create({
-          data: {
-            studio_id: newStudio.id,
-            day_of_week: getDayNumber(day),
-            start_time: startHour,// why cant we store the startHour and endHour d
-            end_time: endHour,
-            is_recurring: true,
-          },
-        });
-      })
-    );
-
-    // Fetch the created studio with all relations
+    // Fetch the created studio with all relations (except availability)
     const createdStudio = await prisma.studio.findUnique({
       where: { id: newStudio.id },
       include: {
         address: true,
-        amenities: true,
-        availability: true
+        amenities: true
       }
     });
 
     return res.status(201).json({
       message: 'Studio created successfully',
-      studio: createdStudio
+      studio: createdStudio,
+      note: 'Availability must be set using the calendar API'
     });
   } catch (error) {
     console.error(error);

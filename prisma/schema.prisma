@@ -53,7 +53,10 @@ model Studio {
   deleted_at    DateTime?
   host          User       @relation("StudioOwner", fields: [host_id], references: [id])
   address       Address?
-  availability  Availability[]
+  default_hours      StudioDefaultHours[]
+  special_hours      StudioSpecialHours[]
+  slots              StudioSlot[]
+  recurring_patterns RecurringPattern[]
   bookings      Booking[]
   reviews       Review[]
   amenities     Amenity[]
@@ -73,17 +76,72 @@ model Studio {
 // }
 
 
-model Availability {
-  id           Int      @id @default(autoincrement())
-  studio_id    Int
-  date         DateTime     
-  start_time   Int 
-  end_time     Int
-  is_recurring Boolean   @default(false) 
-  studio       Studio    @relation(fields: [studio_id], references: [id])
-  created_at   DateTime  @default(now())
-  updated_at   DateTime  @updatedAt
-} 
+// model Availability {
+//   id           Int      @id @default(autoincrement())
+//   studio_id    Int
+//   date         DateTime     
+//   start_time   Int 
+//   end_time     Int
+//   is_recurring Boolean   @default(false) 
+//   studio       Studio    @relation(fields: [studio_id], references: [id])
+//   created_at   DateTime  @default(now())
+//   updated_at   DateTime  @updatedAt
+// } 
+model StudioDefaultHours {
+  id          String    @id @default(uuid())
+  studio      Studio    @relation(fields: [studio_id], references: [id], onDelete: Cascade)
+  studio_id   Int
+  day_of_week Int       // 0: Sunday, 1: Monday, etc.
+  open_time   DateTime  // Store as time
+  close_time  DateTime  // Store as time
+  is_closed   Boolean   @default(false)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  
+  @@unique([studio_id, day_of_week])
+}
+
+model StudioSpecialHours {
+  id          String    @id @default(uuid())
+  studio      Studio    @relation(fields: [studio_id], references: [id], onDelete: Cascade)
+  studio_id   Int
+  date        DateTime  @db.Date
+  open_time   DateTime? // Store as time, nullable for closed days
+  close_time  DateTime? // Store as time, nullable for closed days
+  is_closed   Boolean   @default(false)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  
+  @@unique([studio_id, date])
+}
+
+model StudioSlot {
+  id          String    @id @default(uuid())
+  studio      Studio    @relation(fields: [studio_id], references: [id], onDelete: Cascade)
+  studio_id   Int
+  date        DateTime  @db.Date
+  start_time  DateTime  // Store as time
+  end_time    DateTime  // Store as time
+  is_available Boolean  @default(true)
+  price       Decimal   @db.Decimal(10, 2)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  
+  @@unique([studio_id, date, start_time, end_time])
+}
+model RecurringPattern {
+  id          String    @id @default(uuid())
+  studio      Studio    @relation(fields: [studio_id], references: [id], onDelete: Cascade)
+  studio_id   Int
+  start_date  DateTime  @db.Date
+  end_date    DateTime? @db.Date // Null means indefinite
+  day_of_week Int       // 0: Sunday, 1: Monday, etc.
+  open_time   DateTime  // Store as time
+  close_time  DateTime  // Store as time
+  is_closed   Boolean   @default(false)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+}
 
 model Booking {
   id          Int       @id @default(autoincrement())
@@ -192,6 +250,7 @@ model Photo{
 enum UserType {
   USER
   HOST
+  ADMIN  
 }
 
 enum BookingStatus {

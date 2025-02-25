@@ -24,6 +24,7 @@ const port = process.env.NODE_PORT;
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 app.use("/auth", authRoutes);
+app.use('/calendar', calendarRoutes);
 app.use("/studios", studioRoutes);
 app.use("/bookings", bookingRoutes);
 app.use("/calendar", calendarRoutes);

@@ -1,5 +1,6 @@
 const prisma = require('../database/prismaPostgress');
 const jwt = require('jsonwebtoken');
+
 const isHost = async (req, res, next) => {
   // console.log(req.body.userId)
   const userId = parseInt(req.body.userId); // Assuming user_id is passed in the request body
