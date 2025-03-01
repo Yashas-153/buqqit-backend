@@ -1,6 +1,6 @@
-const prisma = require('../database/prismaPostgress')
-
-export async function getStudioAvailability(req, res) {
+const prisma =  require("../database/prismaPostgress")
+// import prisma from '../database/prismaPostgress'
+exports.getStudioAvailability= async(req, res)=> {
     try {
         const { studioId } = req.params;
         const year = parseInt(req.query.year);
@@ -155,13 +155,6 @@ export async function getStudioAvailability(req, res) {
 }
 
 /**
- * Format date as YYYY-MM-DD
- */
-function formatDate(date) {
-    return date.toISOString().split('T')[0];
-}
-
-/**
  * Get all days in a month between start and end date
  */
 function getDaysInMonth(start, end) {
@@ -177,7 +170,7 @@ function getDaysInMonth(start, end) {
 }
 
 
-module.exports.getAvailabilitySlots = async (req, res) => {
+exports.getAvailabilitySlots= async(req, res)=>{
     const { studio_id, date } = req.query;
 
     if (!studio_id || !date) {
@@ -239,19 +232,13 @@ module.exports.getAvailabilitySlots = async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
-
-import { PrismaClient } from '@prisma/client';
-// import quest } from 'express';
-
-const prisma = new PrismaClient();
-
 /**
  * Default Hours Management
  */
 
 // Get default hours for a studio
 // GET /api/studios/:studioId/default-hours
-export async function getStudioDefaultHours(req, res) {
+exports.getStudioDefaultHours= async(req, res)=> {
     try {
         const { studioId } = req.params;
 
@@ -270,7 +257,7 @@ export async function getStudioDefaultHours(req, res) {
 
 // Set default hours for a studio
 // POST /api/studios/:studioId/default-hours
-export async function setStudioDefaultHours(req, res) {
+exports.setStudioDefaultHours= async(req, res)=> {
     try {
         const { studioId } = req.params;
         const { day_of_week, open_time, close_time, is_closed } = req.body;
@@ -348,7 +335,7 @@ export async function setStudioDefaultHours(req, res) {
 
 // Delete default hours for a specific day
 // DELETE /api/studios/:studioId/default-hours/:dayOfWeek
-export async function deleteStudioDefaultHours(req, res) {
+exports.deleteStudioDefaultHours= async(req, res)=> {
     try {
         const { studioId, dayOfWeek } = req.params;
         const day = parseInt(dayOfWeek);
@@ -380,7 +367,7 @@ export async function deleteStudioDefaultHours(req, res) {
 
 // Get special hours for a studio
 // GET /api/studios/:studioId/special-hours?start_date=2025-03-01&end_date=2025-03-31
-export async function getStudioSpecialHours(req, res) {
+exports.getStudioSpecialHours= async(req, res)=> {
     try {
         const { studioId } = req.params;
         const { start_date, end_date } = req.query;
@@ -428,7 +415,7 @@ export async function getStudioSpecialHours(req, res) {
 
 // Set special hours for a specific date
 // POST /api/studios/:studioId/special-hours
-export async function setStudioSpecialHours(req, res) {
+exports.setStudioSpecialHours= async(req, res)=> {
     try {
         const { studioId } = req.params;
         const { date, open_time, close_time, is_closed } = req.body;
@@ -505,7 +492,7 @@ export async function setStudioSpecialHours(req, res) {
 
 // Delete special hours for a specific date
 // DELETE /api/studios/:studioId/special-hours/:date
-export async function deleteStudioSpecialHours(req, res) {
+exports.deleteStudioSpecialHours= async(req, res)=> {
     try {
         const { studioId, date } = req.params;
         const specialDate = new Date(date);
@@ -533,7 +520,7 @@ export async function deleteStudioSpecialHours(req, res) {
 
 // Get recurring patterns for a studio
 // GET /api/studios/:studioId/recurring-patterns
-export async function getStudioRecurringPatterns(req, res) {
+exports.getStudioRecurringPatterns= async(req, res)=> {
     try {
         const { studioId } = req.params;
 
@@ -555,7 +542,7 @@ export async function getStudioRecurringPatterns(req, res) {
 
 // Create a recurring pattern
 // POST /api/studios/:studioId/recurring-patterns
-export async function createRecurringPattern(req, res) {
+exports.createRecurringPattern= async(req, res)=> {
     try {
         const { studioId } = req.params;
         const {
@@ -643,7 +630,7 @@ export async function createRecurringPattern(req, res) {
 
 // Update a recurring pattern
 // PUT /api/studios/:studioId/recurring-patterns/:patternId
-export async function updateRecurringPattern(req, res) {
+exports.updateRecurringPattern= async(req, res)=> {
     try {
         const { studioId, patternId } = req.params;
         const {
@@ -739,7 +726,7 @@ export async function updateRecurringPattern(req, res) {
 
 // Delete a recurring pattern
 // DELETE /api/studios/:studioId/recurring-patterns/:patternId
-export async function deleteRecurringPattern(req, res) {
+exports.deleteRecurringPattern= async(req, res)=> {
     try {
         const { studioId, patternId } = req.params;
 
@@ -773,7 +760,7 @@ export async function deleteRecurringPattern(req, res) {
 
 // Create or update slots based on availability settings
 // POST /api/studios/:studioId/generate-slots
-export async function generateStudioSlots(req, res) {
+exports.generateStudioSlots= async(req, res)=> {
     try {
         const { studioId } = req.params;
         const { start_date, end_date, hourly_rate } = req.body;

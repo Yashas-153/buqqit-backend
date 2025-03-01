@@ -1,17 +1,18 @@
 require("dotenv").config(); 
-const cookieParser = require('cookie-parser');
 const cors = require("cors");
 const express = require('express');
-const authRoutes = require("./routes/authRoutes");
-const studioRoutes= require("./routes/studioRoutes");
-const bookingRoutes= require("./routes/bookingRoutes");
-const reviewRoutes= require("./routes/reviewRoutes");
-const amenityRoutes= require("./routes/amenityRoutes");
-const searchRoutes = require('./routes/searchRoutes');
-const propRoutes = require("./routes/propsRoutes");
+const cookieParser = require('cookie-parser');
+
 const addonsRouter = require('./routes/addonRouter')
-const equipmentRouts = require('./routes/equipmentRouter')
+const amenityRoutes= require("./routes/amenityRoutes");
+const authRoutes = require("./routes/authRoutes");
+const bookingRoutes= require("./routes/bookingRoutes");
 const calendarRoutes = require('./routes/calendarRoutes')
+const equipmentRouts = require('./routes/equipmentRouter')
+const propRoutes = require("./routes/propsRoutes");
+const reviewRoutes= require("./routes/reviewRoutes");
+const searchRoutes = require('./routes/searchRoutes');
+const studioRoutes= require("./routes/studioRoutes");
 
 const app = express();
 app.use(cors());
@@ -22,18 +23,17 @@ app.use(cookieParser());
 const port = process.env.NODE_PORT;
 
 app.use(express.json());
-app.use('/uploads', express.static('uploads'));
-app.use("/auth", authRoutes);
-app.use('/calendar', calendarRoutes);
-app.use("/studios", studioRoutes);
-app.use("/bookings", bookingRoutes);
-app.use("/calendar", calendarRoutes);
-app.use("/amenity", amenityRoutes);
-app.use("/props", propRoutes);
-app.use("/equipments", equipmentRouts);
-app.use('/search', searchRoutes);
 app.use('/addons',addonsRouter)
+app.use("/amenity", amenityRoutes);
+app.use("/auth", authRoutes);
+app.use("/bookings", bookingRoutes);
+app.use('/calendar', calendarRoutes);
+app.use("/equipments", equipmentRouts);
+app.use("/props", propRoutes);
 app.use("/reviews", reviewRoutes);
+app.use('/search', searchRoutes);
+app.use("/studios", studioRoutes);
+app.use('/uploads', express.static('uploads'));
 
 app.listen(port, '0.0.0.0', () => {
     console.log(`Listening on Port ${port}`);

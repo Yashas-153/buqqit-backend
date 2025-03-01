@@ -18,7 +18,6 @@ router.put('/:studio_id', isAuthenticated, isHost, updateStudio);
 router.delete('/:studio_id', isHost,deleteStudio); 
 router.post('/search',searchStudios)
 router.post('/upload-photos/:studio_id', upload.array('photos', 5), isHost,uploadPhotos); // Limit to 5 photos
-router.post("/availability/:studio_id",isHost,setAvailability)
 router.post("/add-studio-urls",addImageURLs)
 
 module.exports = router;
