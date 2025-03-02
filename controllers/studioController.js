@@ -31,19 +31,19 @@ const getStudios = async (req, res) => {
     const includeOptions = {
       address: true,
       photos: true,
-      amenities: true,
-      availability: true,
-      props:true,
-      equipments:true,
-      addons:true,
-      reviews:true,
-      host: {
-        select: {
-          name: true,
-          email: true,
-          phone_number: true
-        }
-      }
+      // amenities: true,
+      // availability: true,
+      // props:true,
+      // equipments:true,
+      // addons:true,
+      // reviews:true,
+      // host: {
+      //   select: {
+      //     name: true,
+      //     email: true,
+      //     phone_number: true
+      //   }
+      // }
     };
 
     if (host_id) {

@@ -11,7 +11,7 @@ const calendarRoutes = require('./routes/calendarRoutes')
 const equipmentRouts = require('./routes/equipmentRouter')
 const propRoutes = require("./routes/propsRoutes");
 const reviewRoutes= require("./routes/reviewRoutes");
-const searchRoutes = require('./routes/searchRoutes');
+const locationRoutes = require('./routes/locationRoutes');
 const studioRoutes= require("./routes/studioRoutes");
 
 const app = express();
@@ -31,7 +31,7 @@ app.use('/calendar', calendarRoutes);
 app.use("/equipments", equipmentRouts);
 app.use("/props", propRoutes);
 app.use("/reviews", reviewRoutes);
-app.use('/search', searchRoutes);
+app.use('/search', locationRoutes);
 app.use("/studios", studioRoutes);
 app.use('/uploads', express.static('uploads'));
 

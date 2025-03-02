@@ -7,8 +7,9 @@ const getLocationList = async(req,res)=>{
 
     const response = await fetch(endPoint)
     const data = await response.json()
-    if(data){
-        res.json({data})
+    const filteredLocations = data.filter(item=>item.class==="node" || item.class==="suburb" || item.class==="place")
+    if(filteredLocations){
+        res.json({data:filteredLocations})
         return;
     }
     res.json({msg:"There was no location found"})
